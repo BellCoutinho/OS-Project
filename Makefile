@@ -8,7 +8,7 @@ compile:
 	$(CC) -d $(DESTINATION) @$(SRC)
 
 run:
-	java --class-path $(DESTINATION):. main.Main 
+	java --class-path $(DESTINATION):. main.OperatingSystem
 
 clean:
 	rm -rf $(DESTINATION)/*
