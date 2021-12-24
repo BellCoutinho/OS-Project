@@ -2,6 +2,6 @@ package scheduling;
 
 import entity.ProcessControlBlock;
 
-public interface IScheduler {
+public interface Scheduler {
     public void execute(ProcessControlBlock pcb);
 }
