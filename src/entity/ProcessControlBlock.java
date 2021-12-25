@@ -4,12 +4,12 @@ public class ProcessControlBlock {
     private int processId;
     private ProcessState processState;
     private int priority;
-    private int arrivalTime;
+    private long arrivalTime;
     private int burstTime;
     private int completionTime;
     private int turnAroundTime;
     private int waitingTime;
-    private int thread;
+    private Runnable code;
 
     public int getProcessId() {
         return this.processId;
@@ -33,10 +33,10 @@ public class ProcessControlBlock {
         this.priority = priority;
     }
 
-    public int getArrivalTime() {
+    public long getArrivalTime() {
         return this.arrivalTime;
     }
-    public void setArrivalTime(int arrivalTime) {
+    public void setArrivalTime(long arrivalTime) {
         this.arrivalTime = arrivalTime;
     }
 
@@ -68,10 +68,10 @@ public class ProcessControlBlock {
         this.waitingTime = waitingTime;
     }
 
-    public int getThread() {
-        return this.thread;
+    public Runnable getCode() {
+        return this.code;
     }
-    public void setThread(int thread) {
-        this.thread = thread;
+    public void setCode(Runnable code) {
+        this.code = code;
     }
 }
