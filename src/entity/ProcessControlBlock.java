@@ -5,10 +5,10 @@ public class ProcessControlBlock {
     private ProcessState processState;
     private int priority;
     private long arrivalTime;
-    private int burstTime;
-    private int completionTime;
-    private int turnAroundTime;
-    private int waitingTime;
+    private long burstTime;
+    private long completionTime;
+    private long turnAroundTime;
+    private long waitingTime;
     private Runnable code;
 
     public int getProcessId() {
@@ -40,31 +40,31 @@ public class ProcessControlBlock {
         this.arrivalTime = arrivalTime;
     }
 
-    public int getBurstTime() {
+    public long getBurstTime() {
         return this.burstTime;
     }
-    public void setBurstTime(int burstTime) {
+    public void setBurstTime(long burstTime) {
         this.burstTime = burstTime;
     }
 
-    public int getCompletionTime() {
+    public long getCompletionTime() {
         return this.completionTime;
     }
-    public void setCompletionTime(int completionTime) {
+    public void setCompletionTime(long completionTime) {
         this.completionTime = completionTime;
     }
 
-    public int getTurnAroundTime() {
+    public long getTurnAroundTime() {
         return this.turnAroundTime;
     }
-    public void setTurnAroundTime(int turnAroundTime) {
+    public void setTurnAroundTime(long turnAroundTime) {
         this.turnAroundTime = turnAroundTime;
     }
 
-    public int getWaitingTime() {
+    public long getWaitingTime() {
         return this.waitingTime;
     }
-    public void setWaitingTime(int waitingTime) {
+    public void setWaitingTime(long waitingTime) {
         this.waitingTime = waitingTime;
     }
 
