@@ -31,19 +31,28 @@ public class FCFSScheduler implements Scheduler {
     @Override
     public void dispatch(Queue<ProcessControlBlock> readyQueue, CentralProcessingUnit cpu) {
         ProcessControlBlock pcb = readyQueue.remove();
+        long startTime = 0;
+        long endTime = 0;
 
         pcb.setState(ProcessState.RUNNING);
+        startTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
         cpu.execute(pcb.getCode());
-        pcb.setCompletionTime(
-                TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
+        endTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+        pcb.setCompletionTime(endTime);
+        pcb.setBurstTime(startTime - endTime);
+
+        exit(pcb);
     }
 
     @Override
-    public void interrupt(ProcessControlBlock pcb){}
+    public void interrupt(ProcessControlBlock pcb) {
+    }
 
     @Override
     public void exit(ProcessControlBlock pcb) {
-
+        pcb.setState(ProcessState.TERMINATED);
+        pcb.setTurnAroundTime(pcb.getCompletionTime() - pcb.getArrivalTime());
+        pcb.setWaitingTime(pcb.getTurnAroundTime() - pcb.getBurstTime());
     }
 
     public static int nextValue() {
