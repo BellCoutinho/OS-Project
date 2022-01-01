@@ -5,7 +5,7 @@ CC=javac
 
 compile:
 	find -name "*.java" > sources.txt
-	$(CC) -d $(DESTINATION) @$(SRC)
+	$(CC) -Xlint:unchecked -d $(DESTINATION) @$(SRC)
 
 run:
 	java --class-path $(DESTINATION):. main.OperatingSystem

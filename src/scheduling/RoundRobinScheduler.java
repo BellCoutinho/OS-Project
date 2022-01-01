@@ -1,26 +1,29 @@
 package scheduling;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import entity.ProcessControlBlock;
-import entity.ProcessState;
-import entity.Process;
 import entity.CentralProcessingUnit;
+import entity.ProcessControlBlock;
+import entity.Process;
+import entity.ProcessState;
 
-public class FCFSScheduler implements Scheduler, Runnable {
+public class RoundRobinScheduler implements Scheduler, Runnable {
     private static final AtomicInteger identifier = new AtomicInteger();
+    private CentralProcessingUnit cpu;
     private Queue<ProcessControlBlock> readyQueue;
     private static Queue<ProcessControlBlock> jobQueue = new LinkedList<>();
     private static LinkedList<ProcessControlBlock> terminatedQueue = new LinkedList<>();
-    private CentralProcessingUnit cpu;
     private static long clock;
+    private int quantum;
 
-    public FCFSScheduler(CentralProcessingUnit cpu, Queue<ProcessControlBlock> readyQueue) {
-        this.readyQueue = readyQueue;
+    public RoundRobinScheduler(CentralProcessingUnit cpu, Queue<ProcessControlBlock> readyQueue, int quantum) {
         this.cpu = cpu;
+        this.readyQueue = readyQueue;
+        this.quantum = quantum;
     }
 
     @Override
@@ -33,7 +36,7 @@ public class FCFSScheduler implements Scheduler, Runnable {
         pcb.setProcess(process);
         pcb.setArrivalTime(arrivalTime);
         pcb.setBurstTime(burstTime);
-        pcb.setProcessingTime(pcb.getBurstTime());
+        pcb.setProcessingTime(burstTime);
 
         jobQueue.add(pcb);
     }
@@ -60,16 +63,26 @@ public class FCFSScheduler implements Scheduler, Runnable {
 
     @Override
     public void interrupt() {
+        while (!jobQueue.isEmpty() && jobQueue.peek().getArrivalTime() <= clock) {
+            ProcessControlBlock task = jobQueue.remove();
+            task.setState(ProcessState.READY);
+            readyQueue.add(task);
+        }
+
+        ProcessControlBlock pcb = readyQueue.remove();
+        pcb.setState(ProcessState.READY);
+        pcb.setProcessingTime(pcb.getProcessingTime() - this.quantum);
+        readyQueue.add(pcb);
     }
 
     @Override
     public void exit() {
-        ProcessControlBlock pcb = readyQueue.remove();
-        terminatedQueue.add(pcb);
-        pcb.setState(ProcessState.TERMINATED);
-        pcb.setCompletionTime(clock);
-        pcb.setTurnAroundTime(pcb.getCompletionTime() - pcb.getArrivalTime());
-        pcb.setWaitingTime(pcb.getTurnAroundTime() - pcb.getBurstTime());
+         ProcessControlBlock pcb = readyQueue.remove();
+         pcb.setState(ProcessState.TERMINATED);
+         pcb.setCompletionTime(clock);
+         pcb.setTurnAroundTime(pcb.getCompletionTime() - pcb.getArrivalTime());
+         pcb.setWaitingTime(pcb.getTurnAroundTime() - pcb.getBurstTime());
+         terminatedQueue.add(pcb);
     }
 
     @Override
@@ -85,18 +98,28 @@ public class FCFSScheduler implements Scheduler, Runnable {
             }
             dispatch();
             ProcessControlBlock pcb = readyQueue.peek();
-            System.out.println("Executando o processo - " + pcb.getProcessId());
-            while (pcb.getProcessingTime() > 0) {
+            if (pcb.getProcessingTime() <= this.quantum) {
+                clock += pcb.getProcessingTime();
+                System.out.println("Executando o processo - " + pcb.getProcessId());
                 pcb.getProcess().run();
-                pcb.setProcessingTime(pcb.getProcessingTime() - 1);
+                exit();
+                continue;
+            } else {
+                int timer = this.quantum;
+                clock += this.quantum;
+                System.out.println("Executando o processo - " + pcb.getProcessId());
+                while (timer > 0) {
+                    pcb.getProcess().run();
+                    --timer;
+                    //Thread.sleep(TimeUnit.SECONDS.toMillis(quantum));
+                }
             }
-            clock += pcb.getBurstTime();
-            exit();
+            interrupt();
         }
         displayStatistics();
     }
 
-    public static int nextValue() {
+    private static int nextValue() {
         return identifier.getAndIncrement();
     }
 
@@ -108,7 +131,7 @@ public class FCFSScheduler implements Scheduler, Runnable {
         while (!terminatedQueue.isEmpty()) {
             ProcessControlBlock pcb = terminatedQueue.remove();
             System.out.println("PID  ArrivalTime  BurstTime  CompletionTime  TurnAroundTime  WaitingTime  ResponseTime");
-            System.out.printf( " %2d           %2d         %2d              %2d              %2d           %2d           %2d\n",
+            System.out.printf( " %2d           %2d         %2d              %2d              %2d           %2d           %2d\n", 
                     pcb.getProcessId(),
                     pcb.getArrivalTime(),
                     pcb.getBurstTime(),
@@ -117,6 +140,7 @@ public class FCFSScheduler implements Scheduler, Runnable {
                     pcb.getWaitingTime(),
                     pcb.getResponseTime());
         }
+
         System.out.println("===========================================================");
         System.out.printf("Average Turn Around Time is: %.2f\n", averageTurnAroundTime);
         System.out.printf("Average Waiting Time is: %.2f\n", averageWaitingTime);

@@ -1,15 +1,19 @@
 package entity;
 
-public class ProcessControlBlock {
+public class ProcessControlBlock implements Comparable <ProcessControlBlock> {
     private int processId;
     private ProcessState processState;
     private int priority;
     private long arrivalTime;
     private long burstTime;
+    private long processingTime;
     private long completionTime;
     private long turnAroundTime;
     private long waitingTime;
-    private Runnable code;
+    private long responseTime;
+    private boolean assignedResponseTime;
+    private Process process;
+    private Thread thread;
 
     public int getProcessId() {
         return this.processId;
@@ -47,6 +51,13 @@ public class ProcessControlBlock {
         this.burstTime = burstTime;
     }
 
+    public long getProcessingTime() {
+        return this.processingTime;
+    }
+    public void setProcessingTime(long processingTime) {
+        this.processingTime = processingTime;
+    }
+
     public long getCompletionTime() {
         return this.completionTime;
     }
@@ -68,10 +79,49 @@ public class ProcessControlBlock {
         this.waitingTime = waitingTime;
     }
 
-    public Runnable getCode() {
-        return this.code;
+    public long getResponseTime() {
+        return this.responseTime;
     }
-    public void setCode(Runnable code) {
-        this.code = code;
+    public void setResponseTime(long responseTime) {
+        this.responseTime = responseTime;
     }
+
+    public boolean getAssignedResponseTime() {
+        return this.assignedResponseTime;
+    }
+    public void setAssignedResponseTime(boolean assignedResponseTime) {
+        this.assignedResponseTime = assignedResponseTime;
+    }
+
+    public Process getProcess() {
+        return this.process;
+    }
+    public void setProcess(Process process) {
+        this.process = process;
+    }
+
+    public Thread getThread() {
+        return this.thread;
+    }
+    public void setThread(Thread thread) {
+        this.thread = thread;
+    }
+
+    @Override
+    public int compareTo(ProcessControlBlock pcb) {
+        if (this.processId < pcb.getProcessId()) {
+            return -1;
+        }
+        if (this.processId > pcb.getProcessId()) {
+            return 1;
+        }
+        return 0;
+    }
+
+
+    @Override
+    public String toString() {
+        return "PID - " + this.processId + "=" + this.processingTime;
+    }
+
 }
